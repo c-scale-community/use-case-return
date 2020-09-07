@@ -1,3 +1,4 @@
+#!/bin/sh
 # set the download folde
 downloadFolder=/project/return/Share/mm/Rondonia/S1/GEE_preprocessed/
 # set the folder with bash scripts:
