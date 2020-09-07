@@ -1,7 +1,7 @@
-# set the download folder
-downloadFolder=/mnt/raid/milutin/upScaling/Rondonia/S1_all_tiles/GEE_preprocessed/
+# set the download folde
+downloadFolder=/project/return/Share/mm/Rondonia/GEE_preprocessed/
 # set the folder with bash scripts:
-bashFolder=/home/milutin/PycharmProjects/tile128/
+bashFolder=/home/return-mmilenkovic/mm_tools/S1Recovery/
 # set the list with S1 tileId-s:
 TileIDsList=/mnt/raid/milutin/upScaling/Rondonia/List_of_S1_TileIDs.txt
 
