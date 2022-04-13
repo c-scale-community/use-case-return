@@ -6,14 +6,11 @@
 # i.e. get the first argument from the shell, e.g. sh prepare_Disturbance_Maps_Rondonia.sh 204 --> get 204
 tileID=$1
 # set the relevant folders
-# S1_DIR="/mnt/nobackup/milutin/Para_upScaling/Rondonia/test_10_tiles/"
-S1_DIR="/mnt/raid/milutin/upScaling/Rondonia/S1_all_tiles/GEE_preprocessed/"
-# S1_DIR="/mnt/nobackup/milutin/Para_upScaling/ForestChangeMaps/Rondonia/MapBiomas/"
+S1_DIR="/project/return/Share/mm/Rondonia/S1/GEE_preprocessed/"
 #
-DistMap_DIR="/mnt/raid/milutin/upScaling/Rondonia/ForestChangeMaps/Hansen_GFC/"
+DistMap_DIR="/project/return/Share/mm/Rondonia/AuxiliaryData/"
 # set the raster names:
 S1_tifName="Rondonia_S1_VH_TileID_"$tileID".tif"
-# S1_tifName="mapbiomas-brazil-collection-41-00000000000000000000-2017_2018_utm20S.tif"
 #
 DistMap_Name="Rondonia_Hansen_GFC-2018-v1.6_lossyear_mosaic"
 # change the working dir:
