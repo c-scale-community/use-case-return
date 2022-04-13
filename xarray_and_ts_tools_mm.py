@@ -650,6 +650,7 @@ def s1_ts_features_ver2(ts_pix_1):
     if np.all(diff_bool.values == False):
         exception_label = 2
         my_output[0] = exception_label
+        my_output[2] = error_margin
         return my_output
 
     # ------------------ (f) --------------------

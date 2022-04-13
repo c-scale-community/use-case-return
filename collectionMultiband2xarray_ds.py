@@ -31,12 +31,14 @@ def collectionMultiband2xarray_ds(tile_id):
     # general processing flags:
     KEEP_ONLY_S1A = False
     LOSSYEAR_MAP = True
+    STAND_AGE_MAP = True
     MULTIPLE_DATES = True
     CALC_CR_RVI = False
     # ---------
-    # specify the file names of the input rasters (Disturtbance Map, and S1 multiband tiff)
+    # specify the file names of the input rasters (Disturtbance Map, StandAge map and S1 multiband tiff)
     # gfc_filename = r'fcl_2018_Hensen_roi_tapajos_utm21S.tif'
     gfc_filename = "Rondonia_Hansen_lossyear_TileID_" + str(tile_id) + ".tif"
+    standAge_filename = "StandAge_2018_TileID_" + str(tile_id) + ".tif"
     filename_vh = os.path.join(data_dir, "Rondonia_S1_VH_TileID_" + str(tile_id) + ".tif")
     filename_vv = os.path.join(data_dir, "Rondonia_S1_VV_TileID_" + str(tile_id) + ".tif")
     # ---------
@@ -65,6 +67,14 @@ def collectionMultiband2xarray_ds(tile_id):
         da_gfc.coords["band"] = [label_1 for label_1 in da_gfc.descriptions]
     # select only the lossyer band
     da_loss = da_gfc.sel(band='lossyear', drop=True)
+
+    # -----------------------------------------------------------------------
+    # import Stand Age data (Silva junior et al. 2020, MapBiomas):
+    # -----------------------------------------------------------------------
+    if STAND_AGE_MAP:
+        da_standAge = xr.open_rasterio(standAge_filename)
+        da_standAge.coords["band"] = ["StandAge"]
+        da_age = da_standAge.sel(band='StandAge', drop=True)
 
     # -----------------------------------------------------------------------
     # import S1-VH data:
@@ -156,6 +166,10 @@ def collectionMultiband2xarray_ds(tile_id):
     # add Hansen lossyear raster as a coordinate in the ds:
     # -----------------------------------------------------------------------
     ds.coords['LossYear'] = (('y', 'x'), da_loss.values)
+    # -----------------------------------------------------------------------
+    # add Stand Age  raster as a coordinate in the ds:
+    # -----------------------------------------------------------------------
+    ds.coords['StandAge'] = (('y', 'x'), da_age.values)
     # -----------------------------------------------------------------------
     # save the ds as netCDF file
     # -----------------------------------------------------------------------

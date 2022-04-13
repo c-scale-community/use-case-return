@@ -141,17 +141,21 @@ def generalized_TS_categories_analysis(tile_id, POLARIZATION):
         ts_feature2ds(ds_disturb, featName, dist_pix_par_all, disturbed_pixels)
 
     ####################################################################################################################
-    # History period - Std of of the running mean xarray DataStructure
+    # History period - Std of of the running mean xarray DataStructure (!!!! DEPRECATED because of the memory issues!!!)
     ####################################################################################################################
     # get the running mean xarray DataSet for the History period,
-    ds_disturb_runMean_history = ds.where(ds.LossYear.values == LOSS_YEAR)[POLARIZATION]\
-        .rolling(time=sample_num, center=True)\
-        .mean()\
-        .sel(time=slice(start_history, end_history))
+    # ds_disturb_runMean_history = ds.where(ds.LossYear.values == LOSS_YEAR)[POLARIZATION]\
+    #     .rolling(time=sample_num, center=True)\
+    #     .mean()\
+    #     .sel(time=slice(start_history, end_history))
     # -------------
     # calculate the Std of running mean in the History
     # !!! NOTE !!! it reduces the DataSet to a single layer, thus xarray DataArray is the output.
-    da_disturb_runMean_history_std = ds_disturb_runMean_history.std(dim='time')
+    # da_disturb_runMean_history_std = ds_disturb_runMean_history.std(dim='time')
+    #######################################
+    # alternative std (NO memory issues)
+    #######################################
+    da_disturb_runMean_history_std = ds_disturb.error_margin / 2.5758293035489004
     ####################################################################################################################
     # Categorize disturbed pixels according to its TS shape
     ####################################################################################################################
