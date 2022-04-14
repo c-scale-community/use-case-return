@@ -1,8 +1,6 @@
-<style>body {text-align: justify}</style>
+__Use Case Title:__ Monitoring Tropical Forest Recovery Capacity Using **RADAR** satellite data
 
-# Use Case: Monitoring Tropical Forest Recovery Capacity Using **RADAR** satellite data
-
-__Contact persons__: 
+__Contact persons:__ 
 * Milutin Milenković, milutin.milenkovic(at)wur.nl, Wageningen University & Research (WUR), The Netherlands
 * Raymond Oonk, raymond.oonk(at)surf.nl, SURF (Samenwerkende Universitaire Reken Faciliteiten), The Netherlands
 ## Scope
