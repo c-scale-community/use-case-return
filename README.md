@@ -19,4 +19,4 @@ The use case workflow takes the S1 datacube as the input and applies the disturb
 
 Wagner, W.; Bauer-Marschallinger, B.; Navacchi, C.; Reuß, F.; Cao, S.; Reimer, C.; Schramm, M.; Briese, C. A Sentinel-1 Backscatter Datacube for Global Land Monitoring Applications. Remote Sens. 2021, 13, 4622. https://doi.org/10.3390/rs13224622
 
-Bernhard Bauer-Marschallinger, Daniel Sabel, Wolfgang Wagner, Optimisation of global grids for high-resolution remote sensing data, Computers & Geosciences, Volume 72, 2014, Pages 84-93, ISSN 0098-3004, https://doi.org/10.1016/j.cageo.2014.07.005.
+Bauer-Marschallinger, B.; Sabel D.; agner W. Optimisation of global grids for high-resolution remote sensing data, Computers & Geosciences, 2014, Volume 72,  Pages 84-93, ISSN 0098-3004. https://doi.org/10.1016/j.cageo.2014.07.005.
