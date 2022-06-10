@@ -1,0 +1,33 @@
+import os, osr, glob
+import numpy as np
+import matplotlib.pyplot as plt
+%matplotlib inline
+from datetime import datetime
+import pandas as pd
+
+# import TUW packages
+from yeoda.products.preprocessed import SIG0DataCube
+from geopathfinder.naming_conventions.yeoda_naming import YeodaFilename
+#
+%load_ext autoreload
+%autoreload 2
+%reload_ext autoreload
+
+# import my aux functions
+from auxilary_ts_tools_mm import features_from_yeodaTS, plot_TS
+
+#Specify the folder with a S1 datacube (a 300x300 m2 Equi7Tile)
+tile_dir1_path = r'/project/return/Share/EODC_SA020M/V01R01/E078N066T3'
+tile_dir2_path = r'/project/return/Share/EODC_SA020M/V1M0R1/E078N066T3'
+#
+# specify other parameters:
+dimensions=['time', 'band', 'extra_field', 'sensor_field']
+filepaths1 = glob.glob(os.path.join(tile_dir1_path,'*.tif'))
+filepaths2 = glob.glob(os.path.join(tile_dir2_path,'*.tif'))
+
+#Read the datacube:
+sig0_dc1 = SIG0DataCube(filepaths=filepaths1, dimensions=dimensions, filename_class=YeodaFilename, sres=20, continent='SA')
+sig0_dc2 = SIG0DataCube(filepaths=filepaths2, dimensions=dimensions, filename_class=YeodaFilename, sres=20, continent='SA')
+#
+# get info:
+sig0_dc1.inventory[dimensions].head(5)
