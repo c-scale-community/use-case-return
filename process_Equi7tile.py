@@ -7,7 +7,7 @@
     Example:
     1. activate the yeoda env.
     2. run this line:
-    python process_Equi7tile.py -t 'E078N066T3' -r 1 -c 1 -s 100 -o '/home/return-mmilenkovic/'
+    python process_Equi7tile.py -t 'E078N066T3' -r 1 -c 1 -s 100 -o '/path/to/your/output/folder/'
 
 """
 
