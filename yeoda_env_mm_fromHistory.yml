@@ -1,0 +1,19 @@
+name: yeoda
+channels:
+  - defaults
+dependencies:
+  - gdal
+  - python=3.7
+  - pip
+  - cartopy
+  - geopandas
+  - jupyterlab
+  - scikit-image
+  - nodejs
+  - tbb
+  - tbb-devel
+  - tbb4py
+  - poppler
+  - ipympl
+  - rioxarray
+prefix: /home/return-mmilenkovic/miniconda3/envs/yeoda
