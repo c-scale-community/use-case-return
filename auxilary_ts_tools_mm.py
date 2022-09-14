@@ -24,6 +24,36 @@ def wrapper_4_np1dArray(ts_aaray, ts_time_stamps):
     myFeatures = features_from_S1_TS(my_6D_ts)
     return myFeatures
 
+def dt64_to_float(dt64):
+    """Converts numpy.datetime64 to year as float.
+
+    Rounded to days
+
+    Parameters
+    ----------
+    dt64 : np.datetime64 or np.ndarray(dtype='datetime64[X]')
+        date data
+
+    Returns
+    -------
+    float or np.ndarray(dtype=float)
+        Year in floating point representation
+    """
+    import numpy as np
+    #
+    year = dt64.astype('M8[Y]')
+    # print('year:', year)
+    days = (dt64 - year).astype('timedelta64[D]')
+    # print('days:', days)
+    year_next = year + np.timedelta64(1, 'Y')
+    # print('year_next:', year_next)
+    days_of_year = (year_next.astype('M8[D]') - year.astype('M8[D]')
+                    ).astype('timedelta64[D]')
+    # print('days_of_year:', days_of_year)
+    dt_float = 1970 + year.astype(float) + days / (days_of_year)
+    # print('dt_float:', dt_float)
+    return dt_float
+
 
 def features_from_S1_TS(ts_pix_1):
     """
@@ -288,12 +318,15 @@ def features_from_S1_TS(ts_pix_1):
     max_mag_org_date = diff_org_seg1.index.values[max_mag_org_ind]
     # the time difference (in days) between original max magnitude and the running mean max magnitude
     t_mag_org = d_time[max_mag_org_ind]
+    # convert the datetime to float (fraction of the year):
+    max_mag_org_date_float = dt64_to_float(max_mag_org_date)
+    max_mag_date_float = dt64_to_float(max_mag_date)
     # -------------------------------------------
     # the output array
     my_output = [exception_label, ref_mean, error_margin,
                  num_of_segments, TS_end_flag, TS_end_flag_long, TS_end_mag,
-                 seg_id, seg_size, max_mag, max_mag_date, t_pre, t_post, t_total,
-                 max_mag_org, max_mag_org_date, t_mag_org,
+                 seg_id, seg_size, max_mag, max_mag_date_float, t_pre, t_post, t_total,
+                 max_mag_org, max_mag_org_date_float, t_mag_org,
                  seg2_size]
     # -------------------------------------------
     return my_output
@@ -534,14 +567,14 @@ def features_from_yeodaTS(ts_pix_1):
     # get the maximum magnitude
     max_mag_org_ind = np.nanargmax(np.abs(diff_org_seg1.values))
     max_mag_org = diff_org_seg1.values[max_mag_org_ind]
-    max_mag_org_date = diff_org_seg1.index.values[max_mag_org_ind]
+    max_mag_org_date = diff_org_seg1.index.values[max_mag_org_ind].astype(str)
     # the time difference between original max magnitude and the running mean max magnitude
     t_mag_org = d_time[max_mag_org_ind]
     # -------------------------------------------
     # the output array
     my_output = [exception_label, ref_mean, error_margin,
                  num_of_segments, TS_end_flag, TS_end_flag_long, TS_end_mag,
-                 seg_id, seg_size, max_mag, max_mag_date, t_pre, t_post, t_total,
+                 seg_id, seg_size, max_mag, max_mag_date.astype(str), t_pre, t_post, t_total,
                  max_mag_org, max_mag_org_date, t_mag_org,
                  seg2_size]
     # -------------------------------------------

@@ -2,3 +2,5 @@
 .idea
 *.pyc
 *.out
+*.nc
+fileSizes.txt

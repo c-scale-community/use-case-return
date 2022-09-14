@@ -76,6 +76,11 @@ def process_Equi7tile(iTileName, iRowStep, iColStep, iChunkSize, oDir):
         os.mkdir(oDir)
         
     #------------------------------------------------------------------------
+    # correct the row, col indexing to start from 0,0 instead of 1,1 
+    #------------------------------------------------------------------------
+    iRowStep = iRowStep - 1
+    iColStep = iColStep - 1    
+    #------------------------------------------------------------------------
     # Get the filepaths of the tiff fiels of the Equi7Tile
     #------------------------------------------------------------------------
     tile_dir1_path = r'/project/return/Share/EODC_SA020M/V01R01/' + iTileName
@@ -114,7 +119,7 @@ def process_Equi7tile(iTileName, iRowStep, iColStep, iChunkSize, oDir):
     start_col = iColStep*iChunkSize
     #
     sig0_vv_dc_chunk1 = sig0_vv_dc.load_by_pixels(start_row, start_col, row_size=iChunkSize, col_size=iChunkSize, dtype='xarray')
-    sig0_vh_dc_chunk1 = sig0_vv_dc.load_by_pixels(start_row, start_col, row_size=iChunkSize, col_size=iChunkSize, dtype='xarray')
+    sig0_vh_dc_chunk1 = sig0_vh_dc.load_by_pixels(start_row, start_col, row_size=iChunkSize, col_size=iChunkSize, dtype='xarray')
     # remane the xarray variable:
     sig0_vv_dc_chunk1 = sig0_vv_dc_chunk1.rename({'1':'sig0_vv'})
     sig0_vh_dc_chunk1 = sig0_vh_dc_chunk1.rename({'1':'sig0_vh'})
@@ -161,8 +166,9 @@ def process_Equi7tile(iTileName, iRowStep, iColStep, iChunkSize, oDir):
     outName_VV = iTileName + '_' + str(iRowStep) + '_' + str(iColStep) + '_' + str(iChunkSize) + '_VV.nc'
     outName_VH = iTileName + '_' + str(iRowStep) + '_' + str(iColStep) + '_' + str(iChunkSize) + '_VH.nc'
     #
-    dist_out_vv_ds.to_netcdf(os.path.join(oDir, outName_VV))
-    dist_out_vh_ds.to_netcdf(os.path.join(oDir, outName_VH)) 
+    #dist_out_vv_ds.to_netcdf(os.path.join(oDir, outName_VV))
+    #dist_out_vh_ds.to_netcdf(os.path.join(oDir, outName_VH))
+    return dist_out_vv_ds, dist_out_vh_ds
 
     
     
