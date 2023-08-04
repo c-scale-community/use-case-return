@@ -19,10 +19,11 @@ The use case workflow takes the S1 datacube as the input and applies the disturb
 
 The folder Notebooks contains examples on how to: access Sentinel-1 data, make a data cube, plot time series and maps, and analyze the data mostly based on yeoda and xarray packages as well as some custom-defined helper functions. Below is the list of Python notebooks with short explanations.
 
-    * plot_ts_yeoda.ipynb - Plot time seres from a specifed location using the yeoda modole to query the EODC S1 datacube
-    * test_ts_yeoda_processing.ipynb - Take a S1 time series from a specified location and calculate the disturbance magnitude and disturbance time
-    * tempReducer_yeoda.ipynb - Reduce the S1 data cube along the temporal axis to a raster
-    * checkFileSizes.ipynb - Check the file size of each image in the data folders and write those image files with an reading error
+* plot_ts_yeoda.ipynb - Plot time seres from a specifed location using the yeoda modole to query the EODC S1 datacube
+* test_ts_yeoda_processing.ipynb - Take a S1 time series from a specified location and calculate the disturbance magnitude and disturbance time
+* tempReducer_yeoda.ipynb - Reduce the S1 data cube along the temporal axis to a raster
+* checkFileSizes.ipynb - Check the file size of each image in the data folders and write those image files with an reading error
+
     * annualStat_Equi7tile.ipynb - Calculate annual statistic per time seres (for each pixel) within a single Equi7grid tile considering all images
     * annualStat_Equi7tile_AscOnly.ipynb - Calculate annual statistic per time seres (for each pixel) within a single Equi7grid tile considering only ascending images
     * annualStat_Equi7tile_DescOnly.ipynb - Calculate annual statistic per time seres (for each pixel) within a single Equi7grid tile considering only descending images
