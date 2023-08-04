@@ -23,30 +23,23 @@ The folder Notebooks contains examples on how to: access Sentinel-1 data, make a
 * test_ts_yeoda_processing.ipynb - Take a S1 time series from a specified location and calculate the disturbance magnitude and disturbance time
 * tempReducer_yeoda.ipynb - Reduce the S1 data cube along the temporal axis to a raster
 * checkFileSizes.ipynb - Check the file size of each image in the data folders and write those image files with an reading error
-
-    * annualStat_Equi7tile.ipynb - Calculate annual statistic per time seres (for each pixel) within a single Equi7grid tile considering all images
-    * annualStat_Equi7tile_AscOnly.ipynb - Calculate annual statistic per time seres (for each pixel) within a single Equi7grid tile considering only ascending images
-    * annualStat_Equi7tile_DescOnly.ipynb - Calculate annual statistic per time seres (for each pixel) within a single Equi7grid tile considering only descending images
-    * process_Equi7tile.ipynb - Apply the time series analysis per each x, y location (pixel) within a single Equi7grid tile
-    * debug_process_Equi7tile.ipynb - Simple debug setup for the process_Equi7tile function
-    * debug_Equi7tile_DescOnly.ipynb - Debug setup for the processing of descending images
-    * debug_row_col_ts.ipynb - debug setup for a single chank within a Equi7Tile
-    * output_and_forestAge.ipynb - Analysis of the output (S1 time series features) with forest age map
-    * outputChanks_and_forestAge_inSituData.ipynb - Analysis of the output (S1 time series features) with forest age map exstended to in-situ data analysis and recovery time statistics
-    * spatialUnit_analysis.ipynb - Analyzing optimal spatial unit for the space-for-time analysis
-    * read_and_inspect_output.ipynb - Analyze single chank and derive annual statistics maps
-    * outputChunks_explore.ipynb - Analyze single chanks and deal with Equi7Grid
-    * outputChunks_geoWombat.ipynb - Test reading chanks with geoWombat
-    * mosaic_output_with_stac.ipynb - Test reading chanks with stack 
-    * s1_age_and_IntactForest.ipynb -  Analysis of the output (S1 time series features) with forest age map using the old growth (intact) forest as the refernce
-    * outExplore_plotDistance.ipynb -  Analysis of the output (S1 time series features) as the feature space difference from the old growth vector
-    * outExplore_mapFeatDistance.ipynb - Plot a map with magnitute detected in disturbed S1 time seres
-    
-    
-    
-    
-    
-    
+* annualStat_Equi7tile.ipynb - Calculate annual statistic per time seres (for each pixel) within a single Equi7grid tile considering all images
+* annualStat_Equi7tile_AscOnly.ipynb - Calculate annual statistic per time seres (for each pixel) within a single Equi7grid tile considering only ascending images
+* annualStat_Equi7tile_DescOnly.ipynb - Calculate annual statistic per time seres (for each pixel) within a single Equi7grid tile considering only descending images
+* process_Equi7tile.ipynb - Apply the time series analysis per each x, y location (pixel) within a single Equi7grid tile
+* debug_process_Equi7tile.ipynb - Simple debug setup for the process_Equi7tile function
+* debug_Equi7tile_DescOnly.ipynb - Debug setup for the processing of descending images
+* debug_row_col_ts.ipynb - debug setup for a single chank within a Equi7Tile
+* output_and_forestAge.ipynb - Analysis of the output (S1 time series features) with forest age map
+* outputChanks_and_forestAge_inSituData.ipynb - Analysis of the output (S1 time series features) with forest age map exstended to in-situ data analysis and recovery time statistics
+* spatialUnit_analysis.ipynb - Analyzing optimal spatial unit for the space-for-time analysis
+* read_and_inspect_output.ipynb - Analyze single chank and derive annual statistics maps
+* outputChunks_explore.ipynb - Analyze single chanks and deal with Equi7Grid
+* outputChunks_geoWombat.ipynb - Test reading chanks with geoWombat
+* mosaic_output_with_stac.ipynb - Test reading chanks with stack 
+* s1_age_and_IntactForest.ipynb -  Analysis of the output (S1 time series features) with forest age map using the old growth (intact) forest as the refernce
+* outExplore_plotDistance.ipynb -  Analysis of the output (S1 time series features) as the feature space difference from the old growth vector
+* outExplore_mapFeatDistance.ipynb - Plot a map with magnitute detected in disturbed S1 time seres
 
 
 
