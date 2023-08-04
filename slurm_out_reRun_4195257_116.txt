@@ -1,0 +1,15 @@
+The folder is alredy exsiting.
+xxxxxxxx
+Following orbits are listed: ['D039', 'D141']
+xxxxxxxx
+
+xxxxxxxx
+Processing the orbit: D039
+xxxxxxxx
+The chunk with row 1 and column 56 in the orbit D039 contains only NaN values.
+
+xxxxxxxx
+Processing the orbit: D141
+xxxxxxxx
+Lenght of vv timestamps: 378
+Lenght of vh timestamps: 378

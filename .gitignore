@@ -3,4 +3,10 @@
 *.pyc
 *.out
 *.nc
+*.sh
 fileSizes.txt
+done_code/
+dask-worker-space/
+inSitu/
+output/
+input/

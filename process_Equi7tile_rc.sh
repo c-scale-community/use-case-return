@@ -5,7 +5,7 @@
 #SBATCH -p normal                       # slurm partition
 #SBATCH -c 3                            # one CPU core
 #SBATCH --array=0-224                   # how many tasks in the array
-#SBATCH --output=/home/return-mmilenkovic/mm_tools/use-case-return/slurm_out/%A_%a.out
+#SBATCH --output=/project/return/Share/mm/S1_SA_TEST_UPSCALE/E078N066T3_DescOnly/slurm_out/%A_%a.out
 
 # Start date, host, user
 #
@@ -28,10 +28,11 @@ COL=$((SLURM_ARRAY_TASK_ID%15+1)) # B = [1-15]
 # Process one folder (E078N066T3) with chunksize (-s) 1000x1000
 # - a file is 15000 x 15000 and hence an 15 x 15 array with chunksizes of 1000 is ok
 #
-echo "START PROCESSING process_Equi7tile.sh"
-echo "srun python /home/return-mmilenkovic/mm_tools/use-case-return/process_Equi7tile.py -t 'E078N060T3' -r $ROW -c $COL -s 1000 -o '/project/return/Share/mm/S1_SA_output/E078N060T3/'"
 
-srun python /home/return-mmilenkovic/mm_tools/use-case-return/process_Equi7tile.py -t 'E078N060T3' -r $ROW -c $COL -s 1000 -o '/project/return/Share/mm/S1_SA_output/E078N060T3/'
+echo "START PROCESSING process_Equi7tile_rc.sh"
+echo "srun python /home/return-mmilenkovic/mm_tools/use-case-return/process_Equi7tile.py -p 'DESCENDING' -t 'E078N066T3' -r $ROW -c $COL -s 1000 -o '/project/return/Share/mm/S1_SA_TEST_UPSCALE/E078N066T3_DescOnly/'"
+
+srun python /home/return-mmilenkovic/mm_tools/use-case-return/process_Equi7tile.py -p 'DESCENDING' -t 'E078N066T3' -r $ROW -c $COL -s 1000 -o '/project/return/Share/mm/S1_SA_TEST_UPSCALE/E078N066T3_DescOnly/'
 
 # End date
 #

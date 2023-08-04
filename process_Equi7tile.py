@@ -1,4 +1,5 @@
 #!/home/return-mmilenkovic/miniconda3/envs/yeoda/bin
+#!/home/return-mmilenkovic/miniconda3/envs/yeoda/bin
 
 """
     This program takes the name of a Equi7grid tile (T3-level) and calculates 
@@ -40,8 +41,20 @@ except:
 
 #######################################################################################################
 
-def process_Equi7tile(iTileName, iRowStep, iColStep, iChunkSize, oDir):
+def process_Equi7tile(iOrbitPass, iTileName, iRowStep, iColStep, iChunkSize, oDir):
     # check the input:
+    if not iOrbitPass:
+        print("ERROR: Orbit Pass is is Not Specified")
+        print()
+        parser.print_help()
+        return
+    
+    if not iOrbitPass.upper() in ['ASCENDING', 'DESCENDING', 'ALL']:
+        print("ERROR: Orbit Pass is not corectly specified, either: ASCENDING, DESCENDING, or ALL")
+        print()
+        parser.print_help()
+        return
+    
     if not iTileName:
         print("ERROR: Name of the Equi7grid tile is Not Specified")
         print()
@@ -73,8 +86,11 @@ def process_Equi7tile(iTileName, iRowStep, iColStep, iChunkSize, oDir):
         return
     
     if not os.path.isdir(oDir):
-        os.mkdir(oDir)
-        
+        try:
+             os.mkdir(oDir)
+        except:
+            print("The folder is alredy exsiting.")
+       
     #------------------------------------------------------------------------
     # correct the row, col indexing to start from 0,0 instead of 1,1 
     #------------------------------------------------------------------------
@@ -113,24 +129,59 @@ def process_Equi7tile(iTileName, iRowStep, iColStep, iChunkSize, oDir):
     sig0_vh_dc = sig0_vh_dc1.unite(sig0_vh_dc2)
     sig0_vh_dc = sig0_vh_dc.sort_by_dimension('time', ascending=True)
     #------------------------------------------------------------------------
+    # Prepare selections for 'ASCENDING' and 'DESCENDING' orbit passes: 
+    #------------------------------------------------------------------------
+    # get the unique list of ascending and descending orbits:
+    desc_list = [aa for aa in sig0_vv_dc.inventory.extra_field.unique().tolist() if aa[0]=='D']
+    asce_list = [aa for aa in sig0_vv_dc.inventory.extra_field.unique().tolist() if aa[0]=='A']
+    # filter descending orbits and sort by time
+    sig0_vv_desc_dc = sig0_vv_dc.filter_by_dimension(desc_list, name="extra_field")
+    sig0_vv_desc_dc = sig0_vv_desc_dc.sort_by_dimension('time', ascending=True)
+    #
+    sig0_vh_desc_dc = sig0_vh_dc.filter_by_dimension(desc_list, name="extra_field")
+    sig0_vh_desc_dc = sig0_vh_desc_dc.sort_by_dimension('time', ascending=True) 
+    # filter ascending orbits and sort by time
+    sig0_vv_asce_dc = sig0_vv_dc.filter_by_dimension(asce_list, name="extra_field")
+    sig0_vv_asce_dc = sig0_vv_asce_dc.sort_by_dimension('time', ascending=True) 
+    #
+    sig0_vh_asce_dc = sig0_vh_dc.filter_by_dimension(asce_list, name="extra_field")
+    sig0_vh_asce_dc = sig0_vh_asce_dc.sort_by_dimension('time', ascending=True) 
+    
+    #------------------------------------------------------------------------
     # Load the particular chunck of the datacube
     #------------------------------------------------------------------------
     start_row = iRowStep*iChunkSize
     start_col = iColStep*iChunkSize
-    #
-    sig0_vv_dc_chunk1 = sig0_vv_dc.load_by_pixels(start_row, start_col, row_size=iChunkSize, col_size=iChunkSize, dtype='xarray')
-    sig0_vh_dc_chunk1 = sig0_vh_dc.load_by_pixels(start_row, start_col, row_size=iChunkSize, col_size=iChunkSize, dtype='xarray')
+    # load data according to specified orbit pass:   
+    if iOrbitPass.upper() == 'ALL':
+        sig0_vv_dc_chunk1 = sig0_vv_dc.load_by_pixels(start_row, start_col, row_size=iChunkSize, col_size=iChunkSize, dtype='xarray')
+        sig0_vh_dc_chunk1 = sig0_vh_dc.load_by_pixels(start_row, start_col, row_size=iChunkSize, col_size=iChunkSize, dtype='xarray')
+    elif iOrbitPass.upper() == 'DESCENDING':
+        sig0_vv_dc_chunk1 = sig0_vv_desc_dc.load_by_pixels(start_row, start_col, row_size=iChunkSize, col_size=iChunkSize, dtype='xarray')
+        sig0_vh_dc_chunk1 = sig0_vh_desc_dc.load_by_pixels(start_row, start_col, row_size=iChunkSize, col_size=iChunkSize, dtype='xarray')
+    elif iOrbitPass.upper() == 'ASCENDING':
+        sig0_vv_dc_chunk1 = sig0_vv_asce_dc.load_by_pixels(start_row, start_col, row_size=iChunkSize, col_size=iChunkSize, dtype='xarray')
+        sig0_vh_dc_chunk1 = sig0_vh_asce_dc.load_by_pixels(start_row, start_col, row_size=iChunkSize, col_size=iChunkSize, dtype='xarray')  
     # remane the xarray variable:
     sig0_vv_dc_chunk1 = sig0_vv_dc_chunk1.rename({'1':'sig0_vv'})
     sig0_vh_dc_chunk1 = sig0_vh_dc_chunk1.rename({'1':'sig0_vh'})
     # rescale the data in 2019 and 2020
     sig0_vv_dc_chunk1['sig0_vv'].loc[slice('2019-1-1','2021-1-1'), :, :] = sig0_vv_dc_chunk1.sel(time=slice('2019-1-1','2021-1-1')).apply(lambda x: np.round(x/10.,1)).sig0_vv.values
     sig0_vh_dc_chunk1['sig0_vh'].loc[slice('2019-1-1','2021-1-1'), :, :] = sig0_vh_dc_chunk1.sel(time=slice('2019-1-1','2021-1-1')).apply(lambda x: np.round(x/10.,1)).sig0_vh.values
+    
+    #------------------------------------------------------------------------
+    # handle descending and single orbits:
+    #------------------------------------------------------------------------
+    
     #------------------------------------------------------------------------
     # Apply the time-seres analysis per each x, y location in xarray
     #------------------------------------------------------------------------
     # prepare timestamps
     ts_time_stamps = sig0_vv_dc_chunk1['sig0_vv'][:,0, 0].time.values
+    ts_time_stamps_vh = sig0_vh_dc_chunk1['sig0_vh'][:,0, 0].time.values
+    #
+    print('Lenght of vv timestamps: {}'.format(len(ts_time_stamps)))
+    print('Lenght of vh timestamps: {}'.format(len(ts_time_stamps_vh)))
     # get features for VV-Band per each pixel
     dist_out_vv = xr.apply_ufunc(features_as_xrrray_ufunc, 
                                  sig0_vv_dc_chunk1['sig0_vv'],
@@ -141,7 +192,7 @@ def process_Equi7tile(iTileName, iRowStep, iColStep, iChunkSize, oDir):
     # get features for VH-Band per each pixel
     dist_out_vh = xr.apply_ufunc(features_as_xrrray_ufunc, 
                                  sig0_vh_dc_chunk1['sig0_vh'],
-                                 ts_time_stamps,
+                                 ts_time_stamps_vh,
                                  input_core_dims=[["time"], []],
                                  output_core_dims=[["features"]]
                                  )
@@ -161,13 +212,177 @@ def process_Equi7tile(iTileName, iRowStep, iColStep, iChunkSize, oDir):
                                             14:'max_mag_org', 15:'max_mag_org_date', 16:'t_mag_org',
                                             17:'seg2_size'})
     #------------------------------------------------------------------------
+    # Calculate total 4-year statistics per time-series/pixel   
+    #------------------------------------------------------------------------
+    # for VV
+    dist_out_vv_ds['count_total'] = sig0_vv_dc_chunk1['sig0_vv'].count('time')
+    dist_out_vv_ds['min_total'] = sig0_vv_dc_chunk1['sig0_vv'].min('time')
+    dist_out_vv_ds['max_total'] = sig0_vv_dc_chunk1['sig0_vv'].max('time')
+    dist_out_vv_ds['mean_total'] = sig0_vv_dc_chunk1['sig0_vv'].mean('time')
+    dist_out_vv_ds['median_total'] = sig0_vv_dc_chunk1['sig0_vv'].median('time')
+    dist_out_vv_ds['std_total'] = sig0_vv_dc_chunk1['sig0_vv'].std('time')
+    dist_out_vv_ds['q10_total'] = sig0_vv_dc_chunk1['sig0_vv'].quantile(0.1, dim='time').drop('quantile', dim=None)
+    dist_out_vv_ds['q90_total'] = sig0_vv_dc_chunk1['sig0_vv'].quantile(0.9, dim='time').drop('quantile', dim=None)
+    dist_out_vv_ds['q25_total'] = sig0_vv_dc_chunk1['sig0_vv'].quantile(0.25, dim='time').drop('quantile', dim=None)
+    dist_out_vv_ds['q75_total'] = sig0_vv_dc_chunk1['sig0_vv'].quantile(0.75, dim='time').drop('quantile', dim=None)
+    # get the absolute deviation/residual (from median)
+    absMedRes_vv_da = xr.apply_ufunc(lambda ts:  abs(ts - np.nanmedian(ts)), 
+                                     sig0_vv_dc_chunk1['sig0_vv'],
+                                     input_core_dims=[["time"]],
+                                     output_core_dims=[["time"]]
+                                    )
+    # get MAD (median absolute deviation)
+    dist_out_vv_ds['MAD_total'] = absMedRes_vv_da.median('time')
+    #------------------------------------------------------------
+    # for VH
+    dist_out_vh_ds['count_total'] = sig0_vh_dc_chunk1['sig0_vh'].count('time')
+    dist_out_vh_ds['min_total'] = sig0_vh_dc_chunk1['sig0_vh'].min('time')
+    dist_out_vh_ds['max_total'] = sig0_vh_dc_chunk1['sig0_vh'].max('time')
+    dist_out_vh_ds['mean_total'] = sig0_vh_dc_chunk1['sig0_vh'].mean('time')
+    dist_out_vh_ds['median_total'] = sig0_vh_dc_chunk1['sig0_vh'].median('time')
+    dist_out_vh_ds['std_total'] = sig0_vh_dc_chunk1['sig0_vh'].std('time')
+    dist_out_vh_ds['q10_total'] = sig0_vh_dc_chunk1['sig0_vh'].quantile(0.1, dim='time').drop('quantile', dim=None)
+    dist_out_vh_ds['q90_total'] = sig0_vh_dc_chunk1['sig0_vh'].quantile(0.9, dim='time').drop('quantile', dim=None)
+    dist_out_vh_ds['q25_total'] = sig0_vh_dc_chunk1['sig0_vh'].quantile(0.25, dim='time').drop('quantile', dim=None)
+    dist_out_vh_ds['q75_total'] = sig0_vh_dc_chunk1['sig0_vh'].quantile(0.75, dim='time').drop('quantile', dim=None)
+    # get the absolute deviation/residual (from median)
+    absMedRes_vh_da = xr.apply_ufunc(lambda ts:  abs(ts - np.nanmedian(ts)), 
+                                     sig0_vh_dc_chunk1['sig0_vh'],
+                                     input_core_dims=[["time"]],
+                                     output_core_dims=[["time"]]
+                                    )
+    # get MAD (median absolute deviation)
+    dist_out_vh_ds['MAD_total'] = absMedRes_vh_da.median('time')
+    #------------------------------------------------------------------------
+    # Calculate anual statistics per time-series/pixel   
+    #------------------------------------------------------------------------
+    # get the xarray groupBy object with yearly data
+    annual_vv = sig0_vv_dc_chunk1['sig0_vv'].groupby("time.year") 
+    annual_vh = sig0_vh_dc_chunk1['sig0_vh'].groupby("time.year")
+    #------------------------------------------------------------
+    # for VV
+    dist_out_vv_ds['count_2017'] = annual_vv.count('time').sel(year=2017, drop=True)
+    dist_out_vv_ds['count_2018'] = annual_vv.count('time').sel(year=2018, drop=True)
+    dist_out_vv_ds['count_2019'] = annual_vv.count('time').sel(year=2019, drop=True)
+    dist_out_vv_ds['count_2020'] = annual_vv.count('time').sel(year=2020, drop=True)
+    #
+    dist_out_vv_ds['max_2017'] = annual_vv.max('time').sel(year=2017, drop=True)
+    dist_out_vv_ds['max_2018'] = annual_vv.max('time').sel(year=2018, drop=True)
+    dist_out_vv_ds['max_2019'] = annual_vv.max('time').sel(year=2019, drop=True)
+    dist_out_vv_ds['max_2020'] = annual_vv.max('time').sel(year=2020, drop=True)
+    #
+    dist_out_vv_ds['min_2017'] = annual_vv.min('time').sel(year=2017, drop=True)
+    dist_out_vv_ds['min_2018'] = annual_vv.min('time').sel(year=2018, drop=True)
+    dist_out_vv_ds['min_2019'] = annual_vv.min('time').sel(year=2019, drop=True)
+    dist_out_vv_ds['min_2020'] = annual_vv.min('time').sel(year=2020, drop=True)
+    #
+    dist_out_vv_ds['mean_2017'] = annual_vv.mean('time').sel(year=2017, drop=True)
+    dist_out_vv_ds['mean_2018'] = annual_vv.mean('time').sel(year=2018, drop=True)
+    dist_out_vv_ds['mean_2019'] = annual_vv.mean('time').sel(year=2019, drop=True)
+    dist_out_vv_ds['mean_2020'] = annual_vv.mean('time').sel(year=2020, drop=True)
+    #
+    dist_out_vv_ds['median_2017'] = annual_vv.median('time').sel(year=2017, drop=True)
+    dist_out_vv_ds['median_2018'] = annual_vv.median('time').sel(year=2018, drop=True)
+    dist_out_vv_ds['median_2019'] = annual_vv.median('time').sel(year=2019, drop=True)
+    dist_out_vv_ds['median_2020'] = annual_vv.median('time').sel(year=2020, drop=True)
+    #
+    dist_out_vv_ds['std_2017'] = annual_vv.std('time').sel(year=2017, drop=True)
+    dist_out_vv_ds['std_2018'] = annual_vv.std('time').sel(year=2018, drop=True)
+    dist_out_vv_ds['std_2019'] = annual_vv.std('time').sel(year=2019, drop=True)
+    dist_out_vv_ds['std_2020'] = annual_vv.std('time').sel(year=2020, drop=True)
+    #
+    dist_out_vv_ds['q10_2017'] = annual_vv.quantile(0.1, 'time').sel(year=2017, drop=True).drop('quantile', dim=None)
+    dist_out_vv_ds['q10_2018'] = annual_vv.quantile(0.1, 'time').sel(year=2018, drop=True).drop('quantile', dim=None)
+    dist_out_vv_ds['q10_2019'] = annual_vv.quantile(0.1, 'time').sel(year=2019, drop=True).drop('quantile', dim=None)
+    dist_out_vv_ds['q10_2020'] = annual_vv.quantile(0.1, 'time').sel(year=2020, drop=True).drop('quantile', dim=None)
+    #
+    dist_out_vv_ds['q90_2017'] = annual_vv.quantile(0.9, 'time').sel(year=2017, drop=True).drop('quantile', dim=None)
+    dist_out_vv_ds['q90_2018'] = annual_vv.quantile(0.9, 'time').sel(year=2018, drop=True).drop('quantile', dim=None)
+    dist_out_vv_ds['q90_2019'] = annual_vv.quantile(0.9, 'time').sel(year=2019, drop=True).drop('quantile', dim=None)
+    dist_out_vv_ds['q90_2020'] = annual_vv.quantile(0.9, 'time').sel(year=2020, drop=True).drop('quantile', dim=None)
+    #
+    dist_out_vv_ds['q25_2017'] = annual_vv.quantile(0.25, 'time').sel(year=2017, drop=True).drop('quantile', dim=None)
+    dist_out_vv_ds['q25_2018'] = annual_vv.quantile(0.25, 'time').sel(year=2018, drop=True).drop('quantile', dim=None)
+    dist_out_vv_ds['q25_2019'] = annual_vv.quantile(0.25, 'time').sel(year=2019, drop=True).drop('quantile', dim=None)
+    dist_out_vv_ds['q25_2020'] = annual_vv.quantile(0.25, 'time').sel(year=2020, drop=True).drop('quantile', dim=None)
+    #
+    dist_out_vv_ds['q75_2017'] = annual_vv.quantile(0.75, 'time').sel(year=2017, drop=True).drop('quantile', dim=None)
+    dist_out_vv_ds['q75_2018'] = annual_vv.quantile(0.75, 'time').sel(year=2018, drop=True).drop('quantile', dim=None)
+    dist_out_vv_ds['q75_2019'] = annual_vv.quantile(0.75, 'time').sel(year=2019, drop=True).drop('quantile', dim=None)
+    dist_out_vv_ds['q75_2020'] = annual_vv.quantile(0.75, 'time').sel(year=2020, drop=True).drop('quantile', dim=None)
+    #
+    MAD_vv = annual_vv.map(lambda my_xr:  abs(my_xr - my_xr.median('time')).median('time'))
+    #
+    dist_out_vv_ds['MAD_2017'] = MAD_vv.sel(year=2017, drop=True)
+    dist_out_vv_ds['MAD_2018'] = MAD_vv.sel(year=2018, drop=True)
+    dist_out_vv_ds['MAD_2019'] = MAD_vv.sel(year=2019, drop=True)
+    dist_out_vv_ds['MAD_2020'] = MAD_vv.sel(year=2020, drop=True)
+    #------------------------------------------------------------
+    # for VH
+    dist_out_vh_ds['count_2017'] = annual_vh.count('time').sel(year=2017, drop=True)
+    dist_out_vh_ds['count_2018'] = annual_vh.count('time').sel(year=2018, drop=True)
+    dist_out_vh_ds['count_2019'] = annual_vh.count('time').sel(year=2019, drop=True)
+    dist_out_vh_ds['count_2020'] = annual_vh.count('time').sel(year=2020, drop=True)
+    #
+    dist_out_vh_ds['max_2017'] = annual_vh.max('time').sel(year=2017, drop=True)
+    dist_out_vh_ds['max_2018'] = annual_vh.max('time').sel(year=2018, drop=True)
+    dist_out_vh_ds['max_2019'] = annual_vh.max('time').sel(year=2019, drop=True)
+    dist_out_vh_ds['max_2020'] = annual_vh.max('time').sel(year=2020, drop=True)
+    #
+    dist_out_vh_ds['min_2017'] = annual_vh.min('time').sel(year=2017, drop=True)
+    dist_out_vh_ds['min_2018'] = annual_vh.min('time').sel(year=2018, drop=True)
+    dist_out_vh_ds['min_2019'] = annual_vh.min('time').sel(year=2019, drop=True)
+    dist_out_vh_ds['min_2020'] = annual_vh.min('time').sel(year=2020, drop=True)
+    #
+    dist_out_vh_ds['mean_2017'] = annual_vh.mean('time').sel(year=2017, drop=True)
+    dist_out_vh_ds['mean_2018'] = annual_vh.mean('time').sel(year=2018, drop=True)
+    dist_out_vh_ds['mean_2019'] = annual_vh.mean('time').sel(year=2019, drop=True)
+    dist_out_vh_ds['mean_2020'] = annual_vh.mean('time').sel(year=2020, drop=True)
+    #
+    dist_out_vh_ds['median_2017'] = annual_vh.median('time').sel(year=2017, drop=True)
+    dist_out_vh_ds['median_2018'] = annual_vh.median('time').sel(year=2018, drop=True)
+    dist_out_vh_ds['median_2019'] = annual_vh.median('time').sel(year=2019, drop=True)
+    dist_out_vh_ds['median_2020'] = annual_vh.median('time').sel(year=2020, drop=True)
+    #
+    dist_out_vh_ds['std_2017'] = annual_vh.std('time').sel(year=2017, drop=True)
+    dist_out_vh_ds['std_2018'] = annual_vh.std('time').sel(year=2018, drop=True)
+    dist_out_vh_ds['std_2019'] = annual_vh.std('time').sel(year=2019, drop=True)
+    dist_out_vh_ds['std_2020'] = annual_vh.std('time').sel(year=2020, drop=True)
+    #
+    dist_out_vh_ds['q10_2017'] = annual_vh.quantile(0.1, 'time').sel(year=2017, drop=True).drop('quantile', dim=None)
+    dist_out_vh_ds['q10_2018'] = annual_vh.quantile(0.1, 'time').sel(year=2018, drop=True).drop('quantile', dim=None)
+    dist_out_vh_ds['q10_2019'] = annual_vh.quantile(0.1, 'time').sel(year=2019, drop=True).drop('quantile', dim=None)
+    dist_out_vh_ds['q10_2020'] = annual_vh.quantile(0.1, 'time').sel(year=2020, drop=True).drop('quantile', dim=None)
+    #
+    dist_out_vh_ds['q90_2017'] = annual_vh.quantile(0.9, 'time').sel(year=2017, drop=True).drop('quantile', dim=None)
+    dist_out_vh_ds['q90_2018'] = annual_vh.quantile(0.9, 'time').sel(year=2018, drop=True).drop('quantile', dim=None)
+    dist_out_vh_ds['q90_2019'] = annual_vh.quantile(0.9, 'time').sel(year=2019, drop=True).drop('quantile', dim=None)
+    dist_out_vh_ds['q90_2020'] = annual_vh.quantile(0.9, 'time').sel(year=2020, drop=True).drop('quantile', dim=None)
+    #
+    dist_out_vh_ds['q25_2017'] = annual_vh.quantile(0.25, 'time').sel(year=2017, drop=True).drop('quantile', dim=None)
+    dist_out_vh_ds['q25_2018'] = annual_vh.quantile(0.25, 'time').sel(year=2018, drop=True).drop('quantile', dim=None)
+    dist_out_vh_ds['q25_2019'] = annual_vh.quantile(0.25, 'time').sel(year=2019, drop=True).drop('quantile', dim=None)
+    dist_out_vh_ds['q25_2020'] = annual_vh.quantile(0.25, 'time').sel(year=2020, drop=True).drop('quantile', dim=None)
+    #
+    dist_out_vh_ds['q75_2017'] = annual_vh.quantile(0.75, 'time').sel(year=2017, drop=True).drop('quantile', dim=None)
+    dist_out_vh_ds['q75_2018'] = annual_vh.quantile(0.75, 'time').sel(year=2018, drop=True).drop('quantile', dim=None)
+    dist_out_vh_ds['q75_2019'] = annual_vh.quantile(0.75, 'time').sel(year=2019, drop=True).drop('quantile', dim=None)
+    dist_out_vh_ds['q75_2020'] = annual_vh.quantile(0.75, 'time').sel(year=2020, drop=True).drop('quantile', dim=None)
+    #
+    MAD_vh = annual_vh.map(lambda my_xr:  abs(my_xr - my_xr.median('time')).median('time'))
+    #
+    dist_out_vh_ds['MAD_2017'] = MAD_vh.sel(year=2017, drop=True)
+    dist_out_vh_ds['MAD_2018'] = MAD_vh.sel(year=2018, drop=True)
+    dist_out_vh_ds['MAD_2019'] = MAD_vh.sel(year=2019, drop=True)
+    dist_out_vh_ds['MAD_2020'] = MAD_vh.sel(year=2020, drop=True)
+    #------------------------------------------------------------------------
     # Save the calculated features in a NetCDF file  
     #------------------------------------------------------------------------
-    outName_VV = iTileName + '_' + str(iRowStep) + '_' + str(iColStep) + '_' + str(iChunkSize) + '_VV.nc'
-    outName_VH = iTileName + '_' + str(iRowStep) + '_' + str(iColStep) + '_' + str(iChunkSize) + '_VH.nc'
+    outName_VV = iTileName + '_' + str(iRowStep) + '_' + str(iColStep) + '_' + str(iChunkSize) + '_' + iOrbitPass.upper()[:3] + '_VV.nc'
+    outName_VH = iTileName + '_' + str(iRowStep) + '_' + str(iColStep) + '_' + str(iChunkSize) + '_' + iOrbitPass.upper()[:3] + '_VH.nc'
     #
-    #dist_out_vv_ds.to_netcdf(os.path.join(oDir, outName_VV))
-    #dist_out_vh_ds.to_netcdf(os.path.join(oDir, outName_VH))
+    dist_out_vv_ds.to_netcdf(os.path.join(oDir, outName_VV))
+    dist_out_vh_ds.to_netcdf(os.path.join(oDir, outName_VH))
     return dist_out_vv_ds, dist_out_vh_ds
 
     
@@ -175,6 +390,7 @@ def process_Equi7tile(iTileName, iRowStep, iColStep, iChunkSize, oDir):
 #######################################################################################################
 if __name__ == '__main__':
     parser = argparse.ArgumentParser( description=__doc__ , formatter_class=argparse.RawTextHelpFormatter)
+    parser.add_argument("-p","--orbitpass", help="Orbit pass name (str), either: Ascending, Descending, or All [mandatory]", dest="iOrbitPass")
     parser.add_argument("-t","--tilename", help="Name (str) of the Equi7grid tile to be processed [mandatory]", dest="iTileName")
     parser.add_argument("-r","--rowstep", type=int, help="Row ID (int) of the tille cunck to be processed [mandatory]", dest="iRowStep")
     parser.add_argument("-c","--colstep", type=int, help="Column ID (int) of the tille cunck to be processed [mandatory]", dest="iColStep")
@@ -182,4 +398,4 @@ if __name__ == '__main__':
     parser.add_argument("-o","--odir", help="Path to the output directory [mandatory]", dest="oDir")
     args = parser.parse_args()
     #-------------
-    process_Equi7tile(args.iTileName, args.iRowStep, args.iColStep, args.iChunkSize, args.oDir)
+    process_Equi7tile(args.iOrbitPass, args.iTileName, args.iRowStep, args.iColStep, args.iChunkSize, args.oDir)

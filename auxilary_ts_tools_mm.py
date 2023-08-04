@@ -13,15 +13,24 @@ def features_as_xrrray_ufunc(my_ndArray, ts_time_stamps):
 def wrapper_4_np1dArray(ts_aaray, ts_time_stamps):
     #  make a panda seres from the input 
     import pandas as pd
+    import numpy as np
     ts_pix_1 = pd.Series(data=ts_aaray, index=ts_time_stamps).dropna()
-    # deal with the partly identical index
-    oidx = ts_pix_1.index
-    nidx = pd.date_range(oidx.min(), oidx.max(), freq='6D')
-    # interpolate into 6d time seres:
-    #my_6D_ts = ts_pix_1.resample('6D').interpolate(method='linear')
-    my_6D_ts = ts_pix_1.reindex(oidx.union(nidx)).interpolate(method='linear').round(1)
-    # calculate the time seres features:
-    myFeatures = features_from_S1_TS(my_6D_ts)
+    # check if there are duplicates in index and remove it:
+    if ts_pix_1.index.duplicated().any():
+        ts_pix_1 = ts_pix_1[~ts_pix_1.index.duplicated()] 
+    # deal with all-nan time seres, that turn empty after the above line because of 'dropna':
+    if ts_pix_1.empty:
+        # if empthy, set all features to nan
+        myFeatures = [np.nan for aa in np.arange(18)]
+    else:
+        # deal with the partly identical index
+        oidx = ts_pix_1.index
+        nidx = pd.date_range(oidx.min(), oidx.max(), freq='6D')
+        # interpolate into 6d time seres:
+        #my_6D_ts = ts_pix_1.resample('6D').interpolate(method='linear')
+        my_6D_ts = ts_pix_1.reindex(oidx.union(nidx)).interpolate(method='linear').round(1)
+        # calculate the time seres features:
+        myFeatures = features_from_S1_TS(my_6D_ts)
     return myFeatures
 
 def dt64_to_float(dt64):
@@ -131,6 +140,27 @@ def features_from_S1_TS(ts_pix_1):
         exception_label = 1
         my_output[0] = exception_label
         return my_output
+    # -------------------------------------------
+    # check if the TS has valid values in the history period:
+    if np.all(np.isnan(ts_pix_1.loc[slice(start_history, end_recovery)].values)):
+        exception_label = 1
+        my_output[0] = exception_label
+        return my_output
+    # ------------------ (a-0) --------------------
+    # get some annual statistics:
+    #annual_mean = ts_pix_1.groupby(ts_pix_1.index.year).mean()
+    #mean_2017 = annual_mean.loc[2017]
+    #annual_std = ts_pix_1.groupby(ts_pix_1.index.year).std()
+    #std_2017 = annual_std.loc[2017]
+    #annual_range = ts_pix_1.groupby(ts_pix_1.index.year).max() - ts_pix_1.groupby(ts_pix_1.index.year).min()
+    #range_2017 = annual_range.loc[2017]
+    #annual_pDiff = ts_pix_1.groupby(ts_pix_1.index.year).quantile(0.9) - ts_pix_1.groupby(ts_pix_1.index.year).quantile(0.1)
+    #pDiff_2017 = annual_pDiff.loc[2017]
+    # get some global statistics:
+    #global_mean = ts_pix_1.mean()
+    #global_std = ts_pix_1.std()
+    #global_range = ts_pix_1.max() ts_pix_1.min()
+    #global_pDiff = ts_pix_1.quantile(0.9) - ts_pix_1.quantile(0.1)
     # ------------------ (a) --------------------
     # get the running mean of the TS:
     ts_pix_1_mean = ts_pix_1.rolling(sample_num, center=True).mean()
@@ -138,6 +168,13 @@ def features_from_S1_TS(ts_pix_1):
     ts_pix_1_mean = ts_pix_1_mean.dropna()
     # remove everything after the recovery end period date
     ts_pix_1_mean = ts_pix_1_mean.loc[slice(start_history, end_recovery)]
+    # -------------------------------------------
+    # chek if all history values are nan:
+    if np.isnan(ts_pix_1_mean.values).all():
+        exception_label = 11
+        my_output[0] = exception_label
+        return my_output
+    
     # ------------------ (b) --------------------
     # get the reference and its features:
     ref_mean = ts_pix_1_mean.loc[slice(start_history, end_history)].values.mean()
