@@ -15,7 +15,7 @@ The use case has been tested and deployed on the SURF computing infrastructure, 
 
 The use case workflow takes the S1 datacube as the input and applies the disturbance detection algorithm, providing the disturbance magnitude and recovery time per each pixel, i.e. x, y location. As the input datacube is a file-based image collection split in the 300 x 300 km<sup>2</sup>  Equi7Grid tiles (Bauer-Marschallinger et al. 2014), the output raster maps with disturbance magnitude values (in dB) and the recovery periods (in days) are also split in the 300 x 300 km<sup>2</sup>  tiles.
 
-### Examples
+## Examples
 
 The folder Notebooks contains examples on how to: access Sentinel-1 data, make a data cube, plot time series and maps, and analyze the data mostly based on yeoda and xarray packages as well as some custom-defined helper functions. Below is the list of Python notebooks with short explanations.
 

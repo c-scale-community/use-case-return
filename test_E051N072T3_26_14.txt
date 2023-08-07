@@ -1,4 +1,0 @@
-The chunk with row 25 and column 13 in tile E051N072T3 is outside the Amazon basin.
-
-/home/return-mmilenkovic/miniconda3/envs/yeoda/lib/python3.7/site-packages/dask/config.py:168: YAMLLoadWarning: calling yaml.load() without Loader=... is deprecated, as the default Loader is unsafe. Please read https://msg.pyyaml.org/load for full details.
-  data = yaml.load(f.read()) or {}
