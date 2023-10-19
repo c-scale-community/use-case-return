@@ -4,6 +4,12 @@
 *.out
 *.nc
 *.sh
+*.zip
+*.txt
+*.vrt
+*.png
+*.png*
+*.wld
 fileSizes.txt
 done_code/
 dask-worker-space/

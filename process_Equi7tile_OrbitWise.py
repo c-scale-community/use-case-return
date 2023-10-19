@@ -146,7 +146,12 @@ def process_Equi7tile(iOrbitPass, iTileName, iRowStep, iColStep, iChunkSize, oDi
     # Prepare selections for 'ASCENDING' and 'DESCENDING' orbit passes: 
     #------------------------------------------------------------------------
     # get the unique list of ascending and descending orbits:
-    desc_list = [aa for aa in sig0_vv_dc.inventory.extra_field.unique().tolist() if aa[0]=='D']
+    desc_list_vv = [aa for aa in sig0_vv_dc.inventory.extra_field.unique().tolist() if aa[0]=='D']
+    desc_list_vh = [aa for aa in sig0_vh_dc.inventory.extra_field.unique().tolist() if aa[0]=='D']
+    # due to the corrupted fiels it may happen that vv and vh does not have the smae orbit, 
+    # so this step just takes the interstect of the two desc lists:
+    desc_list = list(set(desc_list_vh) & set(desc_list_vv))
+    #
     asce_list = [aa for aa in sig0_vv_dc.inventory.extra_field.unique().tolist() if aa[0]=='A']
     # define list with orbit names
     if iOrbitPass.upper() == 'ALL':
