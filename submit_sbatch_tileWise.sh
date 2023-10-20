@@ -21,9 +21,9 @@ while IFS= read -r line; do
     array[i]=$line
     let "i++"
     # reading from file path
-done < "/home/return-mmilenkovic/mm_tools/use-case-return/equi7tile_list.txt"
-#done < "/home/return-mmilenkovic/mm_tools/use-case-return/equi7tile_list_AOI_MatoGrosso.txt"
-# done < "/home/return-mmilenkovic/mm_tools/use-case-return/equi7tile_list_AOI_Tapajos.txt" 
+done < "/home/fs72029/bschumacher1/use-case-return/equi7tile_list.txt"
+#done < "/home/fs72029/bschumacher1/use-case-return/equi7tile_list_AOI_MatoGrosso.txt"
+# done < "/home/fs72029/bschumacher1/use-case-return/equi7tile_list_AOI_Tapajos.txt" 
 
 
 # iterate and print the output from array 
@@ -40,8 +40,8 @@ echo ""
 
 
 # set start job and number of jobs to submit
-starttile=60
-finaltile=69
+starttile=0
+finaltile=5
 
 
 # loop for sbatch submission (runs from 1 to and including ${njobs}
@@ -52,18 +52,18 @@ do
  echo $tile
  
  # check if the out directory for the processing tile does not exsisct and create one:
- ODIR=/project/return/Share/mm/S1_SA_UPSCALE/${tile}
+ ODIR= /eodc/private/RETURN/upscale_congo/${tile} #/project/return/Share/mm/S1_SA_UPSCALE/${tile}
  if [ ! -d "$ODIR" ];
  then
-	mkdir $ODIR
-    mkdir /project/return/Share/mm/S1_SA_UPSCALE/slurm_out
+    mkdir $ODIR
+    mkdir /eodc/private/RETURN/upscale_congo/slurm_out #/project/return/Share/mm/S1_SA_UPSCALE/slurm_out
     echo "$ODIR directory has been created."
  fi
 
  echo "submitting to squeue, job" $i
 
  # sbatch command
- sbatch /home/return-mmilenkovic/mm_tools/use-case-return/process_Equi7tile_rc_OrbitWise_tile.sh $tile $ODIR 
+ sbatch /home/fs72029/bschumacher1/use-case-return/process_Equi7tile_rc_OrbitWise_tile.sh $tile $ODIR 
 
  echo ""
  echo "   queue check: squeue -u $USER "
